@@ -25,33 +25,41 @@ func Exec(str, delimiter, begin, end string) []string {
 	return Execute(str, c)
 }
 
+func findSection(str string, config Configuration)(*Section, error){
+	beginindex, s := firstIndex(str, config.GetBeginStrings())
+	if beginindex < 0 {
+		return nil, nil
+	}
+
+	section, err := config.FindSectionByBeginString(s)
+	if err != nil {
+		return nil, err
+	}
+
+	endindex, _ := firstIndex(str[beginindex+1:], []string{section.End})
+	if endindex < 0 {
+		return nil, nil
+	}
+
+	return &Section{BeginIndex: beginindex, EndIndex: beginindex + 1 + endindex}, nil
+}
+
+type stringSplit struct{
+    str string
+    config Configuration
+}
+
+func (s *stringSplit)execute()[]string{
+    return nil
+}
+
 func Execute(str string, config Configuration) []string {
 	secs := Sections{}
-
-	begins := config.GetBeginStrings()
 
 	workindex := 0
 
 	for workindex < len(str) {
-		sec, err := func(str string) (*Section, error) {
-			beginindex, s := firstIndex(str, begins)
-			if beginindex < 0 {
-				return nil, nil
-			}
-
-			section, err := config.FindSectionByBeginString(s)
-			if err != nil {
-				return nil, err
-			}
-
-			endindex, _ := firstIndex(str[beginindex+1:], []string{section.End})
-			if endindex < 0 {
-				return nil, nil
-			}
-
-			return &Section{BeginIndex: beginindex, EndIndex: beginindex + 1 + endindex}, nil
-		}(str[workindex:])
-
+        sec, err := findSection(str[workindex:], config)
 		if err != nil {
 			return nil
 		}
@@ -76,7 +84,7 @@ func Execute(str string, config Configuration) []string {
 	for workindex < len(str) {
 		index := strings.Index(str[workindex:], config.Delimiter)
 		if index < 0 {
-			ret = append(ret, str[workindex:])
+			ret = append(ret, str[sindex:])
 			break
 		}
 
