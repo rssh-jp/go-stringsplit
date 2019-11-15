@@ -10,7 +10,10 @@ func TestSuccess(t *testing.T) {
 	conf := NewConfiguration(",")
 	conf.Append("{", "}")
 	conf.Append("\"", "\"")
-	res := Execute(str, conf)
+	res, err := Execute(str, conf)
+    if err != nil{
+        t.Fatal(err)
+    }
 
 	t.Logf("%+v\n", res)
 

@@ -5,16 +5,16 @@ import (
 	"time"
 )
 
-func Exec(str, delimiter, begin, end string) []string {
-	c := NewConfiguration(delimiter)
-
-	c.Append(begin, end)
-
-	return Execute(str, c)
-}
+//func Exec(str, delimiter, begin, end string) []string {
+//	c := NewConfiguration(delimiter)
+//
+//	c.Append(begin, end)
+//
+//	return Execute(str, c)
+//}
 
 func findSection(str string, config Configuration) (*Section, error) {
-	beginindex, s := firstIndex(str, config.GetBeginStrings())
+	beginindex, s := findFirstIndex(str, config.GetBeginStrings())
 	if beginindex < 0 {
 		return nil, nil
 	}
@@ -24,7 +24,7 @@ func findSection(str string, config Configuration) (*Section, error) {
 		return nil, err
 	}
 
-	endindex, _ := firstIndex(str[beginindex+1:], []string{(*section).End})
+	endindex, _ := findFirstIndex(str[beginindex+1:], []string{(*section).End})
 	if endindex < 0 {
 		return nil, nil
 	}
@@ -32,7 +32,7 @@ func findSection(str string, config Configuration) (*Section, error) {
 	return NewSectionIndex(beginindex, beginindex+1+endindex), nil
 }
 
-func Execute(str string, config Configuration) []string {
+func Execute(str string, config Configuration) ([]string, error) {
 	secs := Sections{}
 
 	workindex := 0
@@ -40,7 +40,7 @@ func Execute(str string, config Configuration) []string {
 	for workindex < len(str) {
 		sec, err := findSection(str[workindex:], config)
 		if err != nil {
-			return nil
+			return nil, err
 		}
 
 		if sec == nil {
@@ -84,10 +84,10 @@ func Execute(str string, config Configuration) []string {
 		time.Sleep(time.Millisecond * 100)
 	}
 
-	return ret
+	return ret, nil
 }
 
-func firstIndex(str string, substrings []string) (int, string) {
+func findFirstIndex(str string, substrings []string) (int, string) {
 	indexes := make([]int, len(substrings))
 	for i, substring := range substrings {
 		index := strings.Index(str, substring)
