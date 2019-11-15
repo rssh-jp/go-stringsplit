@@ -10,45 +10,37 @@ var (
 
 type Configuration struct {
 	Delimiter string
-	Sections  []Section
-}
-
-type Section struct {
-	Begin string
-	End   string
-
-	BeginIndex int
-	EndIndex   int
+	Sections  Sections
 }
 
 func NewConfiguration(delimiter string) Configuration {
 	return Configuration{
 		Delimiter: delimiter,
-		Sections:  make([]Section, 0, 8),
+		Sections:  Sections{},
 	}
 }
 
 func (c *Configuration) Append(begin, end string) {
-	c.Sections = append(c.Sections, Section{Begin: begin, End: end})
+	c.Sections = append(c.Sections, NewSectionString(begin, end))
 }
 
-func (c *Configuration) FindSectionByBeginString(s string) (Section, error) {
+func (c *Configuration) FindSectionByBeginString(s string) (*Section, error) {
 	for _, item := range c.Sections {
-		if s != item.Begin {
+		if !item.EqualBeginString(s) {
 			continue
 		}
 
 		return item, nil
 	}
 
-	return Section{}, ErrNotFoundSection
+	return nil, ErrNotFoundSection
 }
 
 func (c *Configuration) GetBeginStrings() []string {
 	ret := make([]string, 0, len(c.Sections))
 
 	for _, item := range c.Sections {
-		ret = append(ret, item.Begin)
+		ret = append(ret, (*item).Begin)
 	}
 
 	return ret

@@ -5,18 +5,6 @@ import (
 	"time"
 )
 
-type Sections []Section
-
-func (sections Sections) IsIn(index int) bool {
-	for _, section := range sections {
-		if section.BeginIndex <= index && index <= section.EndIndex {
-			return true
-		}
-	}
-
-	return false
-}
-
 func Exec(str, delimiter, begin, end string) []string {
 	c := NewConfiguration(delimiter)
 
@@ -25,7 +13,7 @@ func Exec(str, delimiter, begin, end string) []string {
 	return Execute(str, c)
 }
 
-func findSection(str string, config Configuration)(*Section, error){
+func findSection(str string, config Configuration) (*Section, error) {
 	beginindex, s := firstIndex(str, config.GetBeginStrings())
 	if beginindex < 0 {
 		return nil, nil
@@ -36,21 +24,12 @@ func findSection(str string, config Configuration)(*Section, error){
 		return nil, err
 	}
 
-	endindex, _ := firstIndex(str[beginindex+1:], []string{section.End})
+	endindex, _ := firstIndex(str[beginindex+1:], []string{(*section).End})
 	if endindex < 0 {
 		return nil, nil
 	}
 
-	return &Section{BeginIndex: beginindex, EndIndex: beginindex + 1 + endindex}, nil
-}
-
-type stringSplit struct{
-    str string
-    config Configuration
-}
-
-func (s *stringSplit)execute()[]string{
-    return nil
+	return NewSectionIndex(beginindex, beginindex+1+endindex), nil
 }
 
 func Execute(str string, config Configuration) []string {
@@ -59,7 +38,7 @@ func Execute(str string, config Configuration) []string {
 	workindex := 0
 
 	for workindex < len(str) {
-        sec, err := findSection(str[workindex:], config)
+		sec, err := findSection(str[workindex:], config)
 		if err != nil {
 			return nil
 		}
@@ -71,7 +50,7 @@ func Execute(str string, config Configuration) []string {
 		sec.BeginIndex += workindex
 		sec.EndIndex += workindex
 
-		secs = append(secs, *sec)
+		secs = append(secs, sec)
 
 		workindex = sec.EndIndex + 1
 	}
@@ -90,7 +69,7 @@ func Execute(str string, config Configuration) []string {
 
 		endindex := workindex + index
 
-		if secs.IsIn(endindex) {
+		if secs.IsInIndex(endindex) {
 			workindex = endindex + 1
 			continue
 		}
