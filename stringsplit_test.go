@@ -11,9 +11,9 @@ func TestSuccess(t *testing.T) {
 	conf.Append("{", "}")
 	conf.Append("\"", "\"")
 	res, err := Execute(str, conf)
-    if err != nil{
-        t.Fatal(err)
-    }
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	t.Logf("%+v\n", res)
 
