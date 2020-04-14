@@ -5,33 +5,16 @@ import (
 	"time"
 )
 
-//func Exec(str, delimiter, begin, end string) []string {
-//	c := NewConfiguration(delimiter)
-//
-//	c.Append(begin, end)
-//
-//	return Execute(str, c)
-//}
+// ExecuteSimple is execute 1 begin-end sections configure
+func ExecuteSimple(str, delimiter, begin, end string) ([]string, error) {
+	c := NewConfiguration(delimiter)
 
-func findSection(str string, config Configuration) (*Section, error) {
-	beginindex, s := findFirstIndex(str, config.GetBeginStrings())
-	if beginindex < 0 {
-		return nil, nil
-	}
+	c.Append(begin, end)
 
-	section, err := config.FindSectionByBeginString(s)
-	if err != nil {
-		return nil, err
-	}
-
-	endindex, _ := findFirstIndex(str[beginindex+1:], []string{(*section).End})
-	if endindex < 0 {
-		return nil, nil
-	}
-
-	return NewSectionIndex(beginindex, beginindex+1+endindex), nil
+	return Execute(str, c)
 }
 
+// Execute is execute
 func Execute(str string, config Configuration) ([]string, error) {
 	secs := Sections{}
 
@@ -85,6 +68,25 @@ func Execute(str string, config Configuration) ([]string, error) {
 	}
 
 	return ret, nil
+}
+
+func findSection(str string, config Configuration) (*Section, error) {
+	beginindex, s := findFirstIndex(str, config.GetBeginStrings())
+	if beginindex < 0 {
+		return nil, nil
+	}
+
+	section, err := config.FindSectionByBeginString(s)
+	if err != nil {
+		return nil, err
+	}
+
+	endindex, _ := findFirstIndex(str[beginindex+1:], []string{(*section).End})
+	if endindex < 0 {
+		return nil, nil
+	}
+
+	return NewSectionIndex(beginindex, beginindex+1+endindex), nil
 }
 
 func findFirstIndex(str string, substrings []string) (int, string) {
