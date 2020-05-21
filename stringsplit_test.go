@@ -12,7 +12,7 @@ func TestSuccess(t *testing.T) {
 	const begin2 = "\""
 	const end2 = "\""
 
-	t.Logf("test configure\nsrc       : %s\ndelimiter : %s\nbegin1    : %s\nend1      : %s\nbegin2    : %s\nend2      : %s\n", str, delimiter, begin1, end1, begin2, end2)
+	t.Logf("test configure\n%-10s: %s\n%-10s: %s,\n%-10s: %s\n%-10s: %s\n%-10s: %s\n%-10s: %s\n", "src", str, "delimiter", delimiter, "begin1", begin1, "end1", end1, "begin2", begin2, "end2", end2)
 
 	conf := NewConfiguration(delimiter)
 	conf.Append(begin1, end1)
@@ -47,7 +47,7 @@ func TestExecuteSimple(t *testing.T) {
 	const begin = "{"
 	const end = "}"
 
-	t.Logf("test configure\nsrc       : %s\ndelimiter : %s\nbegin     : %s\nend       : %s\n", str, delimiter, begin, end)
+	t.Logf("test configure\n%-10s: %s\n%-10s: %s\n%-10s: %s\n%-10s: %s\n", "src", str, "delimiter", delimiter, "begin", begin, "end", end)
 
 	res, err := ExecuteSimple(str, delimiter, begin, end)
 	if err != nil {

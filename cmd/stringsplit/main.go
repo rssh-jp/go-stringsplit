@@ -22,5 +22,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println(res)  // [aaa "bb,b"ccc{ddd,} eee]
+	log.Println(res) // [aaa "bb,b"ccc{ddd,} eee]
 }
