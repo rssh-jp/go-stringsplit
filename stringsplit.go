@@ -2,7 +2,6 @@ package stringsplit
 
 import (
 	"strings"
-	"time"
 )
 
 // ExecuteSimple is execute 1 begin-end sections configure
@@ -63,8 +62,6 @@ func Execute(str string, config Configuration) ([]string, error) {
 
 		workindex = endindex + 1
 		sindex = workindex
-
-		time.Sleep(time.Millisecond * 100)
 	}
 
 	return ret, nil

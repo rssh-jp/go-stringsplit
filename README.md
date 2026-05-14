@@ -1,7 +1,21 @@
 # go-stringsplit
-文字列を分割する
-# usage
+
+[![Go](https://github.com/rssh-jp/go-stringsplit/actions/workflows/go.yml/badge.svg)](https://github.com/rssh-jp/go-stringsplit/actions/workflows/go.yml)
+
+区切り文字を指定して文字列を分割するライブラリ。  
+特定のセクション（括弧内・クォート内など）では区切らないよう制御できる。
+
+## インストール
+
+```bash
+go get github.com/rssh-jp/go-stringsplit
 ```
+
+## 使い方
+
+### 基本的な使用例
+
+```go
 package main
 
 import (
@@ -13,25 +27,59 @@ import (
 func main() {
 	const str = `aaa,"bb,b"ccc{ddd,},eee`
 	const delimiter = ","
-	const begin1 = "{"
-	const end1 = "}"
-	const begin2 = "\""
-	const end2 = "\""
 
 	conf := stringsplit.NewConfiguration(delimiter)
-	conf.Append(begin1, end1)
-	conf.Append(begin2, end2)
+	conf.Append("{", "}")   // {} 内は区切らない
+	conf.Append(`"`, `"`)  // "" 内は区切らない
+
 	res, err := stringsplit.Execute(str, conf)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println(res)  // [aaa "bb,b"ccc{ddd,} eee]
+	log.Println(res) // [aaa "bb,b"ccc{ddd,} eee]
 }
 ```
 
-# detail
-元となる文字列と、それをどの文字列で分割しないのかを指定する。  
-それと、`"`内や`/* */`内など特定の文字列内では区切りたくない場合はそれを指定できる。  
-`conf := stringsplit.NewConfiguration`の引数に区切りたい文字列を入れ  
-`conf.Append`の引数に区切りたくない特定の文字列を入れる
+### シンプルな使用例（セクション1つ）
+
+```go
+res, err := stringsplit.ExecuteSimple(str, ",", "{", "}")
+```
+
+## API リファレンス
+
+### 関数
+
+| 関数 | シグネチャ | 説明 |
+|------|-----------|------|
+| `NewConfiguration` | `func NewConfiguration(delimiter string) Configuration` | 区切り文字を指定して設定を生成する |
+| `Execute` | `func Execute(str string, config Configuration) ([]string, error)` | 設定に従って文字列を分割する |
+| `ExecuteSimple` | `func ExecuteSimple(str, delimiter, begin, end string) ([]string, error)` | セクション1つを指定して文字列を分割する |
+
+### `Configuration` メソッド
+
+| メソッド | シグネチャ | 説明 |
+|---------|-----------|------|
+| `Append` | `func (c *Configuration) Append(begin, end string)` | スキップするセクションの開始・終了文字列を追加する |
+
+## 動作の詳細
+
+- `config.Delimiter` で指定した文字列が区切り文字となる。
+- `config.Append(begin, end)` で登録したセクション内（`begin` から `end` の間）では、区切り文字が出現しても分割しない。
+- セクションは複数登録可能。
+- 同一文字列を `begin` と `end` に指定することで、ダブルクォートのような対称セクションにも対応できる。
+
+## 開発
+
+```bash
+# ビルド確認
+go build ./...
+
+# テスト実行
+go test ./...
+
+# 静的解析
+go vet ./...
+```
+
