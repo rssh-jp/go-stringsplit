@@ -13,7 +13,8 @@ func ExecuteSimple(str, delimiter, begin, end string) ([]string, error) {
 	return Execute(str, c)
 }
 
-// Execute is execute
+// Execute splits str by config.Delimiter, ignoring delimiters that appear
+// inside any registered section (begin..end pairs).
 func Execute(str string, config Configuration) ([]string, error) {
 	secs := Sections{}
 
@@ -45,7 +46,6 @@ func Execute(str string, config Configuration) ([]string, error) {
 	for workindex < len(str) {
 		index := strings.Index(str[workindex:], config.Delimiter)
 		if index < 0 {
-			ret = append(ret, str[sindex:])
 			break
 		}
 
@@ -56,13 +56,13 @@ func Execute(str string, config Configuration) ([]string, error) {
 			continue
 		}
 
-		s := string(str[sindex:endindex])
+		ret = append(ret, str[sindex:endindex])
 
-		ret = append(ret, s)
-
-		workindex = endindex + 1
+		workindex = endindex + len(config.Delimiter)
 		sindex = workindex
 	}
+
+	ret = append(ret, str[sindex:])
 
 	return ret, nil
 }
@@ -78,12 +78,14 @@ func findSection(str string, config Configuration) (*Section, error) {
 		return nil, err
 	}
 
-	endindex, _ := findFirstIndex(str[beginindex+1:], []string{(*section).End})
+	beginLen := len(section.Begin)
+	endindex, _ := findFirstIndex(str[beginindex+beginLen:], []string{section.End})
 	if endindex < 0 {
 		return nil, nil
 	}
 
-	return NewSectionIndex(beginindex, beginindex+1+endindex), nil
+	// EndIndex は end 文字列の最後の文字位置（inclusive）
+	return NewSectionIndex(beginindex, beginindex+beginLen+endindex+len(section.End)-1), nil
 }
 
 func findFirstIndex(str string, substrings []string) (int, string) {

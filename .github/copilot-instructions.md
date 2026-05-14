@@ -12,7 +12,8 @@ go-stringsplit/
 ├── stringsplit.go      # Execute() / ExecuteSimple() — 分割ロジック本体
 ├── config.go           # Configuration 構造体・NewConfiguration() / Append()
 ├── section.go          # Section / Sections 構造体・インデックス管理
-├── stringsplit_test.go # テスト
+├── stringsplit_test.go # テスト（テーブル駆動）
+├── Makefile            # ビルド・テスト・静的解析のショートカット
 └── cmd/stringsplit/
     └── main.go         # 動作確認用 CLI エントリーポイント
 ```
@@ -33,9 +34,19 @@ go-stringsplit/
   2. `config.Delimiter` を順に探し、その位置が `Sections.IsInIndex()` に含まれる場合はスキップして分割しない
 - `ExecuteSimple()` は `Configuration` に1つのセクションを追加して `Execute()` を呼ぶ薄いラッパー
 
+### デリミタの進め方（重要）
+
+- デリミタが見つかった場合、`workindex` は `endindex + len(config.Delimiter)` 進める。
+  - `+1` のみにすると複数文字のデリミタが正しく扱えない。
+- デリミタ検索ループ終了後、`ret = append(ret, str[sindex:])` で残りの断片を追加する。
+  - これにより末尾区切り文字（`"a,b,"` → `["a","b",""]`）と通常終端（末尾のフラグメント）を同一パスで処理できる。
+
 ### セクション管理（section.go）
 
 - `Section` は文字列ペア（`Begin`/`End`）とインデックスペア（`BeginIndex`/`EndIndex`）の両方を兼用する構造体
+- `EndIndex` は end 文字列の**最後の文字の位置**（inclusive）を表す。
+  - `findSection()` での計算: `beginindex + len(begin) + endindex_in_substring + len(end) - 1`
+  - begin が複数文字の場合は `beginindex + 1` ではなく `beginindex + len(begin)` から end を探索すること。
 - `Sections.IsInIndex(index)` でデリミタが保護区間内かを判定する
 
 ### Configuration（config.go）
@@ -47,21 +58,31 @@ go-stringsplit/
 ## 新しい機能を追加する場合
 
 - `stringsplit.go` に公開関数を追加する
-- `stringsplit_test.go` に対応するテストを追加する
+- `stringsplit_test.go` の `TestExecute` テーブルに対応するケースを追加する
 - README.md の API リファレンステーブルも更新する
 
 ## テスト・検証コマンド
 
 ```bash
 # ビルド確認
-go build ./...
+make build
 
 # テスト実行
-go test ./...
+make test
 
 # 静的解析
-go vet ./...
+make vet
 ```
+
+## Makefile ターゲット一覧
+
+| ターゲット | 説明 |
+|-----------|------|
+| `make build` | CLI バイナリを `bin/stringsplit` にビルドする |
+| `make test` | ユニットテストを実行する |
+| `make vet` | 静的解析を実行する |
+| `make run` | ビルドして CLI を実行する |
+| `make clean` | ビルド成果物 (`bin/`) を削除する |
 
 ## 依存更新
 
@@ -70,3 +91,4 @@ go vet ./...
 ```bash
 go mod tidy
 ```
+

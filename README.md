@@ -65,21 +65,42 @@ res, err := stringsplit.ExecuteSimple(str, ",", "{", "}")
 
 ## 動作の詳細
 
-- `config.Delimiter` で指定した文字列が区切り文字となる。
+- `config.Delimiter` で指定した文字列が区切り文字となる（複数文字可）。
 - `config.Append(begin, end)` で登録したセクション内（`begin` から `end` の間）では、区切り文字が出現しても分割しない。
-- セクションは複数登録可能。
+- セクションは複数登録可能（`begin`/`end` ともに複数文字可）。
 - 同一文字列を `begin` と `end` に指定することで、ダブルクォートのような対称セクションにも対応できる。
+- `end` が見つからないセクションは保護対象とならず、通常通り分割される。
+- 末尾に区切り文字がある場合、末尾に空文字列の要素が追加される（例: `"a,b,"` → `["a", "b", ""]`）。
 
 ## 開発
 
 ```bash
 # ビルド確認
-go build ./...
+make build
 
 # テスト実行
-go test ./...
+make test
 
 # 静的解析
-go vet ./...
+make vet
+
+# CLI バイナリのビルド
+make build
+
+# CLI 実行
+make run
+
+# ビルド成果物の削除
+make clean
 ```
+
+## Makefile ターゲット一覧
+
+| ターゲット | 説明 |
+|-----------|------|
+| `make build` | CLI バイナリを `bin/stringsplit` にビルドする |
+| `make test` | ユニットテストを実行する |
+| `make vet` | 静的解析を実行する |
+| `make run` | ビルドして CLI を実行する |
+| `make clean` | ビルド成果物 (`bin/`) を削除する |
 
